@@ -2,9 +2,11 @@
 
 import { useState, useCallback, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+import { FiMaximize2, FiMinimize2, FiFileText, FiGrid } from "react-icons/fi";
 
 const MOBILE_BREAKPOINT = 768;
+
+type MobileTab = "pdf" | "canvas";
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(() =>
@@ -49,6 +51,7 @@ const PdfViewer = dynamic(
 
 export default function Home() {
   const isMobile = useIsMobile();
+  const [mobileTab, setMobileTab] = useState<MobileTab>("canvas");
   const [pdfPanelWidth, setPdfPanelWidth] = useState(400);
   const [isResizing, setIsResizing] = useState(false);
   const [isPdfCollapsed, setIsPdfCollapsed] = useState(() =>
@@ -82,35 +85,72 @@ export default function Home() {
     setIsPdfCollapsed((prev) => !prev);
   }, []);
 
+  // Mobile: tabbed layout (PDF tab | Canvas tab)
+  if (isMobile) {
+    return (
+      <main className="flex flex-col h-screen bg-white overflow-hidden">
+        <div className="flex shrink-0 border-b border-gray-200 bg-gray-50">
+          <button
+            type="button"
+            onClick={() => setMobileTab("pdf")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+              mobileTab === "pdf"
+                ? "bg-white text-blue-600 border-b-2 border-blue-600 -mb-px"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <FiFileText size={18} />
+            PDF
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("canvas")}
+            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
+              mobileTab === "canvas"
+                ? "bg-white text-blue-600 border-b-2 border-blue-600 -mb-px"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <FiGrid size={18} />
+            Canvas
+          </button>
+        </div>
+        <div className="flex-1 min-h-0 relative">
+          {mobileTab === "pdf" && (
+            <div className="absolute inset-0 overflow-auto">
+              <PdfViewer />
+            </div>
+          )}
+          {mobileTab === "canvas" && (
+            <div className="absolute inset-0">
+              <TldrawCanvas />
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // Desktop: side-by-side layout with resize
   return (
     <main
-      className={`flex h-screen bg-white overflow-hidden ${
-        isMobile ? "flex-col" : ""
-      }`}
+      className="flex h-screen bg-white overflow-hidden"
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
       {/* PDF Panel */}
       <div
-        className={`shrink-0 border-gray-200 transition-all duration-300 ${
-          isMobile
-            ? isPdfCollapsed
-              ? "h-0 overflow-hidden border-0"
-              : "h-[40vh] min-h-[200px] border-b w-full"
-            : `border-r ${isPdfCollapsed ? "w-0 overflow-hidden" : ""}`
+        className={`shrink-0 border-r border-gray-200 transition-all duration-300 ${
+          isPdfCollapsed ? "w-0 overflow-hidden" : ""
         }`}
-        style={
-          isMobile
-            ? undefined
-            : { width: isPdfCollapsed ? 0 : pdfPanelWidth }
-        }
+        style={{ width: isPdfCollapsed ? 0 : pdfPanelWidth }}
       >
         <PdfViewer />
       </div>
 
-      {/* Resize Handle - desktop only */}
-      {!isMobile && !isPdfCollapsed && (
+      {/* Resize Handle */}
+      {!isPdfCollapsed && (
         <div
           className={`w-1 bg-gray-200 hover:bg-blue-400 cursor-col-resize shrink-0 transition-colors ${
             isResizing ? "bg-blue-500" : ""
@@ -121,7 +161,6 @@ export default function Home() {
 
       {/* Canvas Panel */}
       <div className="flex-1 relative min-h-0">
-        {/* Toggle PDF Panel Button */}
         <button
           onClick={togglePdfPanel}
           className="absolute top-4 left-4 z-10 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
