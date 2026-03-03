@@ -1,0 +1,43 @@
+{
+  "name": "canvasflow",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2",
+    "class-variance-authority": "^0.7",
+    "clsx": "^2",
+    "cmdk": "^1",
+    "embla-carousel-react": "^8",
+    "input-otp": "^1",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-hot-toast": "^2",
+    "react-icons": "^5",
+    "react-day-picker": "^9",
+    "react-hook-form": "^7",
+    "react-pdf": "^9",
+    "react-resizable-panels": "^2",
+    "recharts": "^2",
+    "sonner": "^1",
+    "tailwind-merge": "^2",
+    "tldraw": "^3",
+    "vaul": "^1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

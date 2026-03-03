@@ -1,0 +1,141 @@
+"use client";
+
+import { useState, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
+import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
+
+const MOBILE_BREAKPOINT = 768;
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
+      : false
+  );
+  useEffect(() => {
+    const m = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const listener = () => setIsMobile(m.matches);
+    m.addEventListener("change", listener);
+    return () => m.removeEventListener("change", listener);
+  }, []);
+  return isMobile;
+}
+
+// Dynamic imports to avoid SSR issues with tldraw and react-pdf
+const TldrawCanvas = dynamic(
+  () =>
+    import("@/components/canvas/TldrawCanvas").then((mod) => mod.TldrawCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full bg-gray-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    ),
+  }
+);
+
+const PdfViewer = dynamic(
+  () => import("@/components/pdf/PdfViewer").then((mod) => mod.PdfViewer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full bg-gray-100">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+      </div>
+    ),
+  }
+);
+
+export default function Home() {
+  const isMobile = useIsMobile();
+  const [pdfPanelWidth, setPdfPanelWidth] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
+  const [isPdfCollapsed, setIsPdfCollapsed] = useState(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`).matches
+      : false
+  );
+
+  const minPdfWidth = 300;
+  const maxPdfWidth = 600;
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = Math.max(minPdfWidth, Math.min(maxPdfWidth, e.clientX));
+      setPdfPanelWidth(newWidth);
+    },
+    [isResizing]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  const togglePdfPanel = useCallback(() => {
+    setIsPdfCollapsed((prev) => !prev);
+  }, []);
+
+  return (
+    <main
+      className={`flex h-screen bg-white overflow-hidden ${
+        isMobile ? "flex-col" : ""
+      }`}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+    >
+      {/* PDF Panel */}
+      <div
+        className={`shrink-0 border-gray-200 transition-all duration-300 ${
+          isMobile
+            ? isPdfCollapsed
+              ? "h-0 overflow-hidden border-0"
+              : "h-[40vh] min-h-[200px] border-b w-full"
+            : `border-r ${isPdfCollapsed ? "w-0 overflow-hidden" : ""}`
+        }`}
+        style={
+          isMobile
+            ? undefined
+            : { width: isPdfCollapsed ? 0 : pdfPanelWidth }
+        }
+      >
+        <PdfViewer />
+      </div>
+
+      {/* Resize Handle - desktop only */}
+      {!isMobile && !isPdfCollapsed && (
+        <div
+          className={`w-1 bg-gray-200 hover:bg-blue-400 cursor-col-resize shrink-0 transition-colors ${
+            isResizing ? "bg-blue-500" : ""
+          }`}
+          onMouseDown={handleMouseDown}
+        />
+      )}
+
+      {/* Canvas Panel */}
+      <div className="flex-1 relative min-h-0">
+        {/* Toggle PDF Panel Button */}
+        <button
+          onClick={togglePdfPanel}
+          className="absolute top-4 left-4 z-10 p-2 bg-white rounded-lg shadow-md border border-gray-200 hover:bg-gray-50 transition-colors"
+          title={isPdfCollapsed ? "Show PDF Panel" : "Hide PDF Panel"}
+        >
+          {isPdfCollapsed ? (
+            <FiMaximize2 size={18} className="text-gray-600" />
+          ) : (
+            <FiMinimize2 size={18} className="text-gray-600" />
+          )}
+        </button>
+
+        <TldrawCanvas />
+      </div>
+    </main>
+  );
+}
