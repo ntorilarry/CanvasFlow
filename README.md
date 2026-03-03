@@ -1,5 +1,7 @@
 # Canvas Studio
 
+**[Live demo →](https://canvaflow.netlify.app/)**
+
 A canvas application with **PDF viewing**, a **Pin tool** for attaching and grouping shapes, and a **Camera tool** for cropping and exporting regions as images. Built with Next.js, React 19, and [tldraw](https://tldraw.dev).
 
 ---
