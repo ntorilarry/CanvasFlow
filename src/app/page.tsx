@@ -85,10 +85,10 @@ export default function Home() {
     setIsPdfCollapsed((prev) => !prev);
   }, []);
 
-  // Mobile: tabbed layout (PDF tab | Canvas tab)
+
   if (isMobile) {
     return (
-      <main className="flex flex-col h-[95vh] bg-white overflow-hidden">
+      <main className="flex flex-col h-[90vh] bg-white overflow-hidden">
         <div className="flex shrink-0 border-b border-gray-200 bg-gray-50">
           <button
             type="button"
