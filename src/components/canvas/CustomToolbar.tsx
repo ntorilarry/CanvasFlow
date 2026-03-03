@@ -25,8 +25,9 @@ export function CustomToolbar({ editor }: CustomToolbarProps) {
 
   return (
     <div
-      className="absolute left-1/2 -translate-x-1/2 w-fit flex items-center gap-1 p-1.5 bg-white rounded-xl shadow-lg border border-gray-200 z-[100] touch-none
-        bottom-4 top-auto md:top-4 md:bottom-auto"
+      className="left-1/2 -translate-x-1/2 w-fit flex items-center gap-1 p-1.5 bg-white rounded-xl shadow-lg border border-gray-200 touch-none
+        fixed top-14 z-[9999]
+        md:absolute md:top-4 md:bottom-auto md:z-[100]"
     >
       {tools.map((tool) => (
         <button
