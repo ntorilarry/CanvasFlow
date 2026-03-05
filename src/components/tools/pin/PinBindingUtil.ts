@@ -118,6 +118,8 @@ export class PinBindingUtil extends BindingUtil<PinBinding> {
 
           if (updates.length > 0) {
             editor.updateShapes(updates as any);
+            // Keep pin always on top after it moves with the shapes
+            editor.bringToFront([pinId]);
           }
         });
       } finally {

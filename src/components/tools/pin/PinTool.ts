@@ -1,4 +1,5 @@
 import { StateNode, TLEventHandlers, createShapeId } from "tldraw";
+import { getShapesToBindAtPoint } from "./getShapesToBindAtPoint";
 
 export class PinTool extends StateNode {
   static override id = "pin";
@@ -11,10 +12,7 @@ export class PinTool extends StateNode {
     const { currentPagePoint } = this.editor.inputs;
     const pinId = createShapeId();
 
-    // Find shapes under the pin tip (where user clicked) before creating the pin
-    const shapesAtPoint = this.editor
-      .getShapesAtPoint(currentPagePoint)
-      .filter((shape) => shape.type !== "pin" && shape.type !== "camera");
+    const shapesToBind = getShapesToBindAtPoint(this.editor, currentPagePoint);
 
     // Single undoable operation: create pin + bindings via Editor API
     this.editor.run(() => {
@@ -30,15 +28,15 @@ export class PinTool extends StateNode {
         },
       });
 
-      // Attach the pin to the shape(s) under it so moving any of them moves the pin (and each other)
-      if (shapesAtPoint.length >= 2) {
+      // Attach the pin to the shape(s) so moving any of them moves the pin (and each other)
+      if (shapesToBind.length >= 2) {
         // Overlapping shapes: bind each pair so moving one moves the others and the pin
-        for (let i = 0; i < shapesAtPoint.length; i++) {
-          for (let j = i + 1; j < shapesAtPoint.length; j++) {
+        for (let i = 0; i < shapesToBind.length; i++) {
+          for (let j = i + 1; j < shapesToBind.length; j++) {
             this.editor.createBinding({
               type: "pin-binding",
-              fromId: shapesAtPoint[i].id,
-              toId: shapesAtPoint[j].id,
+              fromId: shapesToBind[i].id,
+              toId: shapesToBind[j].id,
               props: {
                 pinId,
                 anchor: { x: 0.5, y: 0.5 },
@@ -46,9 +44,9 @@ export class PinTool extends StateNode {
             });
           }
         }
-      } else if (shapesAtPoint.length === 1) {
+      } else if (shapesToBind.length === 1) {
         // Single shape: bind the shape to itself so moving it moves the pin
-        const shapeId = shapesAtPoint[0].id;
+        const shapeId = shapesToBind[0].id;
         this.editor.createBinding({
           type: "pin-binding",
           fromId: shapeId,
@@ -59,6 +57,9 @@ export class PinTool extends StateNode {
           },
         });
       }
+
+      // Keep pin always on top so it never goes behind other shapes
+      this.editor.bringToFront([pinId]);
     });
 
     this.editor.setCurrentTool("select");
