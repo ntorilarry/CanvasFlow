@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Tldraw, Editor, Box, DefaultToolbar } from "tldraw";
+import { Tldraw, Editor, Box, DefaultToolbar, type TLShapeId } from "tldraw";
 import { CustomToolbar } from "@/components/canvas/CustomToolbar";
 import { PinShapeUtil } from "@/components/tools/pin/PinShapeUtil";
 import { PinTool } from "@/components/tools/pin/PinTool";
@@ -83,7 +83,7 @@ export function TldrawCanvas({ className }: TldrawCanvasProps) {
         y: number;
         props: { w?: number; h?: number };
       }>;
-      const toFront: string[] = [];
+      const toFront: TLShapeId[] = [];
 
       for (const pin of pins) {
         const pos = { x: pin.x, y: pin.y };
@@ -91,7 +91,7 @@ export function TldrawCanvas({ className }: TldrawCanvasProps) {
         pinPositionsRef.current.set(pin.id, pos);
 
         const moved = prev && (prev.x !== pos.x || prev.y !== pos.y);
-        if (moved) toFront.push(pin.id);
+        if (moved) toFront.push(pin.id as TLShapeId);
         if (!moved) continue;
 
         // Pin position changed: either binding moved it (shapes moved) or user dragged it
